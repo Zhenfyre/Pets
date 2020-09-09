@@ -21,6 +21,9 @@
         android:title="@string/action_insert_dummy_data"
         app:showAsAction="never" />
 
+    <!-- showAsAction="never" determines whether option will be shown as action button
+    never specifies that it will always be shown in the overflow menu ...  -->
+
     <item
         android:id="@+id/action_delete_all_entries"
         android:title="@string/action_delete_all_entries"
