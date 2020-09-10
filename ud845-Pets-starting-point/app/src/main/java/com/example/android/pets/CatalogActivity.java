@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -14,14 +15,12 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.android.pets.data.PetContract.PetEntry;
-import com.example.android.pets.data.PetDbHelper;
 
 /**
  * Displays list of pets that were entered and stored in the app.
  */
 public class CatalogActivity extends AppCompatActivity {
 
-    private PetDbHelper mDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +36,6 @@ public class CatalogActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-        mDbHelper = new PetDbHelper(this);
     }
 
     @Override
@@ -52,19 +49,6 @@ public class CatalogActivity extends AppCompatActivity {
      * the pets database.
      */
     private void displayDatabaseInfo() {
-        // To access our database, we instantiate our subclass of SQLiteOpenHelper
-        // and pass the context, which is the current activity.
-        // Create and/or open a database to read from it
-        // Similar to .open shelter.db command in terminal
-        // UI wants a readable database.  Asks mDbHelper which is our instance of PetDbHelper for a database
-        // mDbHelper checks to see if a database exists already
-        // If a database does not exist, mDbHelper will make a database using the OnCreate() code
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        //SQLiteDatabase communicates between UI and the shelter.db
-
-        // Perform this raw SQL query "SELECT * FROM pets"
-        // to get a Cursor that contains all rows from the pets table.
-        //Cursor cursor = db.rawQuery("SELECT * FROM " + PetEntry.TABLE_NAME, null);
 
         String[] projection = {
                 PetEntry._ID,
@@ -74,15 +58,7 @@ public class CatalogActivity extends AppCompatActivity {
                 PetEntry.COLUMN_PET_WEIGHT
         };
 
-        Cursor cursor = db.query(
-                PetEntry.TABLE_NAME,
-                projection,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
+        Cursor cursor = getContentResolver().query(PetEntry.CONTENT_URI, projection, null, null, null);
 
         TextView displayView = (TextView) findViewById(R.id.text_view_pet);
 
@@ -129,10 +105,7 @@ public class CatalogActivity extends AppCompatActivity {
     }
 
     private void insertPet(){
-        // Gets the data repository in write mode
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
-        // Creates a ContentValues object which is the object construction for the data to be entered
+         // Creates a ContentValues object which is the object construction for the data to be entered
         ContentValues values = new ContentValues();
         //Stores key-value pairs i.e. makes association between the key (column header) and the value (value for that pet)
         // Does NOT add data to SQL db
@@ -140,11 +113,8 @@ public class CatalogActivity extends AppCompatActivity {
         values.put(PetEntry.COLUMN_PET_BREED, "Terrier");
         values.put(PetEntry.COLUMN_PET_GENDER, PetEntry.GENDER_MALE);
         values.put(PetEntry.COLUMN_PET_WEIGHT, 7);
-        // THIS statement adds the values object data to the database
-        // long is added to create a row id for the statement so we can do a log message
-        long newRowId = db.insert(PetEntry.TABLE_NAME, null, values);
-        Log.v("CatalogActivity", "New row ID " + newRowId);
 
+        Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
     }
 
     @Override
